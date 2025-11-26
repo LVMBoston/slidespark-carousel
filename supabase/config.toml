@@ -1,1 +1,4 @@
 project_id = "kgkjahkpintykibpybbz"
+
+[functions.convert-pptx]
+verify_jwt = false

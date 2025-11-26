@@ -1,17 +1,11 @@
 import { useState } from 'react';
-import { ParsedPptx, SlideData } from '@/types/pptx';
+import { SlideData } from '@/types/pptx';
 import { PptxUploader } from '@/components/PptxUploader';
 import { PptxCarousel } from '@/components/PptxCarousel';
 import { Presentation } from 'lucide-react';
 
 const Index = () => {
-  const [parsedData, setParsedData] = useState<ParsedPptx | null>(null);
   const [slides, setSlides] = useState<SlideData[]>([]);
-
-  const handleParsed = (data: ParsedPptx) => {
-    setParsedData(data);
-    setSlides(data.slides);
-  };
 
   const handleImagesUploaded = (updatedSlides: SlideData[]) => {
     setSlides(updatedSlides);
@@ -37,10 +31,7 @@ const Index = () => {
 
         {/* Upload Section */}
         <div className="mb-12">
-          <PptxUploader 
-            onParsed={handleParsed} 
-            onImagesUploaded={handleImagesUploaded}
-          />
+          <PptxUploader onImagesUploaded={handleImagesUploaded} />
         </div>
 
         {/* Carousel Section */}
@@ -55,31 +46,6 @@ const Index = () => {
             <div className="max-w-5xl mx-auto">
               <PptxCarousel slides={slides} />
             </div>
-          </div>
-        )}
-
-        {/* Debug Info */}
-        {parsedData && (
-          <div className="max-w-5xl mx-auto">
-            <details className="bg-card rounded-xl p-6 shadow-[var(--shadow-card)]">
-              <summary className="cursor-pointer font-semibold text-lg mb-4">
-                Debug Information
-              </summary>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-2">Metadata</h3>
-                  <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm">
-                    {JSON.stringify(parsedData.metadata, null, 2)}
-                  </pre>
-                </div>
-                <div>
-                  <h3 className="font-semibold mb-2">Slides</h3>
-                  <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm max-h-96">
-                    {JSON.stringify(slides, null, 2)}
-                  </pre>
-                </div>
-              </div>
-            </details>
           </div>
         )}
       </div>
