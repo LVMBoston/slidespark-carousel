@@ -54,10 +54,11 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
         throw convertError;
       }
 
-      // Step 4: Match images with parsed metadata
+      // Step 4: Match images with parsed metadata and create legacy SlideData format
       const slides: SlideData[] = parsed.slides.map((parsedSlide, index) => ({
         ...parsedSlide,
-        imageUrl: data.images[index]?.url || '',
+        type: parsedSlide.slideType,
+        imageUrl: data.images[index]?.url || parsedSlide.imageFile,
       }));
 
       // Filter visible slides only

@@ -69,7 +69,6 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
         <SlideRenderer 
           slide={currentSlide} 
           isActive={true} 
-          currentUrl={currentUrl}
         />
 
         {/* Navigation Arrows */}
