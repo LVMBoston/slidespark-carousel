@@ -26,40 +26,52 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
     }
 
     setIsProcessing(true);
+    console.log('🚀 Starting PPTX upload:', file.name);
+    
     try {
       // Step 1: Parse PPTX metadata
-      toast.success('Parsing presentation metadata...');
+      console.log('📋 Step 1: Parsing metadata...');
+      toast.info('Parsing presentation metadata...');
       const parser = new PptxParser();
       await parser.loadFile(file);
       const parsed = await parser.parse();
+      console.log('✅ Parsed:', parsed.metadata);
 
       // Step 2: Upload file to Supabase Storage
+      console.log('☁️ Step 2: Uploading to storage...');
+      toast.info('Uploading file to storage...');
       const fileName = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('presentations')
         .upload(fileName, file);
 
       if (uploadError) {
+        console.error('❌ Upload error:', uploadError);
         throw uploadError;
       }
-
-      toast.success('File uploaded! Converting slides to images...');
+      console.log('✅ Uploaded:', fileName);
 
       // Step 3: Convert PPTX to images via CloudConvert
+      console.log('🎨 Step 3: Converting to images...');
+      toast.info('Converting slides to images (this may take up to 1 minute)...');
       const { data, error: convertError } = await supabase.functions.invoke('convert-pptx', {
         body: { filePath: fileName },
       });
 
       if (convertError) {
+        console.error('❌ Conversion error:', convertError);
         throw convertError;
       }
+      console.log('✅ Converted:', data);
 
       // Step 4: Match images with parsed metadata and create legacy SlideData format
+      console.log('🔗 Step 4: Matching images with metadata...');
       const slides: SlideData[] = parsed.slides.map((parsedSlide, index) => ({
         ...parsedSlide,
         type: parsedSlide.slideType,
         imageUrl: data.images[index]?.url || parsedSlide.imageFile,
       }));
+      console.log('✅ Final slides:', slides.length, 'slides created');
 
       // Filter visible slides only
       const visibleSlides = slides.filter(s => !s.isHidden);
@@ -70,7 +82,7 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
         `(${parsed.metadata.hiddenSlides} hidden).`
       );
     } catch (error) {
-      console.error('Error processing PPTX:', error);
+      console.error('❌ Error processing PPTX:', error);
       toast.error('Failed to process presentation. Please try again.');
     } finally {
       setIsProcessing(false);
@@ -105,11 +117,12 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
           </div>
 
           {isProcessing && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground p-4 bg-muted rounded-lg">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <div>
-                <p className="font-medium">Processing your presentation...</p>
-                <p className="text-xs">This may take up to a minute depending on the file size.</p>
+            <div className="flex items-center gap-3 text-sm p-6 bg-primary/5 border-2 border-primary/20 rounded-lg">
+              <Loader2 className="w-6 h-6 animate-spin text-primary flex-shrink-0" />
+              <div className="space-y-1">
+                <p className="font-semibold text-foreground">Processing your presentation...</p>
+                <p className="text-xs text-muted-foreground">Parsing → Uploading → Converting to images</p>
+                <p className="text-xs text-muted-foreground">This may take up to 1 minute depending on file size.</p>
               </div>
             </div>
           )}
