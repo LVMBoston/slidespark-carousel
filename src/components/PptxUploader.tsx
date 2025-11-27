@@ -7,6 +7,7 @@ import { Upload, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { SlideData } from '@/types/pptx';
+import { PptxParser } from '@/lib/pptxParser';
 
 interface PptxUploaderProps {
   onImagesUploaded: (slides: SlideData[]) => void;
@@ -26,7 +27,13 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
 
     setIsProcessing(true);
     try {
-      // Upload file to Supabase Storage
+      // Step 1: Parse PPTX metadata
+      toast.success('Parsing presentation metadata...');
+      const parser = new PptxParser();
+      await parser.loadFile(file);
+      const parsed = await parser.parse();
+
+      // Step 2: Upload file to Supabase Storage
       const fileName = `${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('presentations')
@@ -36,9 +43,9 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
         throw uploadError;
       }
 
-      toast.success('File uploaded! Converting to images...');
+      toast.success('File uploaded! Converting slides to images...');
 
-      // Call edge function to convert PPTX
+      // Step 3: Convert PPTX to images via CloudConvert
       const { data, error: convertError } = await supabase.functions.invoke('convert-pptx', {
         body: { filePath: fileName },
       });
@@ -47,15 +54,20 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
         throw convertError;
       }
 
-      // Convert the image URLs to slide data format
-      const slides: SlideData[] = data.images.map((file: any, index: number) => ({
-        id: `slide-${index + 1}`,
-        imageUrl: file.url,
-        hotspots: [],
+      // Step 4: Match images with parsed metadata
+      const slides: SlideData[] = parsed.slides.map((parsedSlide, index) => ({
+        ...parsedSlide,
+        imageUrl: data.images[index]?.url || '',
       }));
 
+      // Filter visible slides only
+      const visibleSlides = slides.filter(s => !s.isHidden);
+
       onImagesUploaded(slides);
-      toast.success(`Presentation converted! ${data.images.length} slides loaded.`);
+      toast.success(
+        `Presentation converted! ${visibleSlides.length} slides loaded ` +
+        `(${parsed.metadata.hiddenSlides} hidden).`
+      );
     } catch (error) {
       console.error('Error processing PPTX:', error);
       toast.error('Failed to process presentation. Please try again.');
@@ -102,12 +114,13 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
           )}
 
           <div className="p-4 bg-muted rounded-lg space-y-2 text-sm">
-            <p className="font-medium">✨ Automatic Conversion</p>
+            <p className="font-medium">✨ Automatic Features</p>
             <ul className="space-y-1 text-muted-foreground list-disc list-inside">
-              <li>Each slide will be converted to a high-quality image</li>
-              <li>Maintains original formatting and design</li>
+              <li>Parses speaker notes for video/GIF/link slides</li>
+              <li>Extracts hotspots and social sharing buttons</li>
+              <li>Respects hidden slides and [DOCUMENTATION] notes</li>
+              <li>Converts each slide to high-quality PNG</li>
               <li>Maximum file size: 20MB</li>
-              <li>Conversion typically takes 30-60 seconds</li>
             </ul>
           </div>
         </div>
