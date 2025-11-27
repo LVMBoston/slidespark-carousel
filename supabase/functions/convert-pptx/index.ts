@@ -82,11 +82,18 @@ serve(async (req) => {
     const uploadUrl = uploadTask.result.form.url;
     const uploadParameters = uploadTask.result.form.parameters;
 
+    // Extract filename from path (remove timestamp prefix if present)
+    const originalFileName = filePath.includes('-') 
+      ? filePath.substring(filePath.indexOf('-') + 1) 
+      : filePath;
+    
     const formData = new FormData();
     Object.entries(uploadParameters).forEach(([key, value]) => {
       formData.append(key, value as string);
     });
-    formData.append('file', fileData);
+    // Create a File object with proper filename so CloudConvert accepts it
+    const file = new File([fileData], originalFileName, { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    formData.append('file', file);
 
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
