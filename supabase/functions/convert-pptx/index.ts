@@ -57,12 +57,18 @@ serve(async (req) => {
             input: 'upload-pptx',
             output_format: 'png',
             input_format: 'pptx',
+            filename: 'slide-{page}',
             pages: 'all',
-            pixel_density: 144,
+            pixel_density: 150,
+            quality: 85,
+            fit: 'max',
+            zoom: 1,
           },
           'export-images': {
             operation: 'export/url',
             input: 'convert-to-images',
+            inline: false,
+            archive_multiple_files: false,
           },
         },
       }),
@@ -134,7 +140,23 @@ serve(async (req) => {
 
     if (jobStatus.status === 'error') {
       console.error('Job failed:', jobStatus);
-      throw new Error('CloudConvert job failed');
+      
+      // Extract detailed error information from failed tasks
+      const failedTasks = jobStatus.tasks.filter((task: any) => task.status === 'error');
+      const errorDetails = failedTasks.map((task: any) => ({
+        name: task.name,
+        code: task.code,
+        message: task.message,
+        operation: task.operation
+      }));
+      
+      console.error('Failed tasks details:', JSON.stringify(errorDetails, null, 2));
+      
+      const errorMessage = errorDetails.length > 0 
+        ? `CloudConvert conversion failed: ${errorDetails[0].message} (${errorDetails[0].code})`
+        : 'CloudConvert job failed';
+      
+      throw new Error(errorMessage);
     }
 
     if (jobStatus.status !== 'finished') {
