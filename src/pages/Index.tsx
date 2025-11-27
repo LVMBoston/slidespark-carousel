@@ -35,7 +35,7 @@ const Index = () => {
         </div>
 
         {/* Carousel Section */}
-        {slides.length > 0 && slides.some(s => s.imageUrl) && (
+        {slides.length > 0 && (
           <div className="mb-12">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold mb-2">Interactive Carousel</h2>
