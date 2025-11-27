@@ -6,10 +6,9 @@ import { Loader2 } from 'lucide-react';
 interface SlideRendererProps {
   slide: SlideData;
   isActive: boolean;
-  currentUrl: string;
 }
 
-export const SlideRenderer = ({ slide, isActive, currentUrl }: SlideRendererProps) => {
+export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [gifKey, setGifKey] = useState(Date.now());
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +56,7 @@ export const SlideRenderer = ({ slide, isActive, currentUrl }: SlideRendererProp
               controls
               onLoadedData={handleImageLoad}
             >
-              {slide.videoUrl && <source src={slide.videoUrl} type="video/mp4" />}
+              {slide.mediaUrl && <source src={slide.mediaUrl} type="video/mp4" />}
             </video>
           </>
         );
@@ -71,7 +70,7 @@ export const SlideRenderer = ({ slide, isActive, currentUrl }: SlideRendererProp
               </div>
             )}
             <img
-              src={slide.gifUrl ? `${slide.gifUrl}?t=${gifKey}` : slide.imageUrl}
+              src={slide.mediaUrl ? `${slide.mediaUrl}?t=${gifKey}` : slide.imageUrl}
               alt={`Slide ${slide.index}`}
               className="w-full h-full object-contain"
               onLoad={handleImageLoad}
@@ -125,7 +124,7 @@ export const SlideRenderer = ({ slide, isActive, currentUrl }: SlideRendererProp
   return (
     <div className="relative w-full h-full bg-background">
       {renderContent()}
-      {slide.imageUrl && <HotspotOverlay hotspots={slide.hotspots} currentUrl={currentUrl} />}
+      {slide.imageUrl && <HotspotOverlay hotspots={slide.hotspots} />}
     </div>
   );
 };

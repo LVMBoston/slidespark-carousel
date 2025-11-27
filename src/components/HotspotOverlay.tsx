@@ -1,5 +1,5 @@
 import { Hotspot } from '@/types/pptx';
-import { shareUtils } from '@/lib/shareUtils';
+import { shareActions, ShareData } from '@/lib/shareUtils';
 import { Button } from '@/components/ui/button';
 import { 
   MessageSquare, 
@@ -12,15 +12,13 @@ import {
   Share2,
   Cloud
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface HotspotOverlayProps {
   hotspots: Hotspot[];
-  currentUrl: string;
 }
 
 const HotspotIcon = ({ type }: { type: Hotspot['type'] }) => {
-  const className = "w-5 h-5";
+  const className = "w-4 h-4";
   
   switch (type) {
     case 'SMS':
@@ -46,12 +44,17 @@ const HotspotIcon = ({ type }: { type: Hotspot['type'] }) => {
   }
 };
 
-export const HotspotOverlay = ({ hotspots, currentUrl }: HotspotOverlayProps) => {
+export const HotspotOverlay = ({ hotspots }: HotspotOverlayProps) => {
   const handleClick = (hotspot: Hotspot) => {
-    const success = shareUtils.handleHotspotClick(hotspot, currentUrl);
-    
-    if (hotspot.type === 'INSTAGRAM' && success) {
-      toast.success('URL copied to clipboard!');
+    const shareData: ShareData = {
+      message: hotspot.metadata.message || '',
+      subject: hotspot.metadata.subject || '',
+      linkStyle: hotspot.metadata.linkStyle || 'inline',
+    };
+
+    const action = shareActions[hotspot.type];
+    if (action) {
+      action(shareData);
     }
   };
 
@@ -64,10 +67,10 @@ export const HotspotOverlay = ({ hotspots, currentUrl }: HotspotOverlayProps) =>
           size="icon"
           className="absolute pointer-events-auto opacity-90 hover:opacity-100 transition-opacity shadow-lg"
           style={{
-            left: `${hotspot.left}%`,
-            top: `${hotspot.top}%`,
-            width: `${hotspot.width}%`,
-            height: `${hotspot.height}%`,
+            left: `${hotspot.xPercent}%`,
+            top: `${hotspot.yPercent}%`,
+            width: `${hotspot.widthPercent}%`,
+            height: `${hotspot.heightPercent}%`,
           }}
           onClick={() => handleClick(hotspot)}
           title={`Share via ${hotspot.type}`}

@@ -1,109 +1,141 @@
-import { Hotspot } from '@/types/pptx';
+// src/lib/shareUtils.ts
 
-export const shareUtils = {
-  openSMS(hotspot: Hotspot, currentUrl: string) {
-    const message = hotspot.metadata.messageLink || hotspot.metadata.message || '';
-    const fullMessage = `${message} ${currentUrl}`.trim();
-    window.open(`sms:?body=${encodeURIComponent(fullMessage)}`, '_blank');
+export interface ShareData {
+  message: string;
+  subject: string;
+  linkStyle: 'inline' | 'separate';
+}
+
+/**
+ * Get the current page URL for sharing
+ */
+function getShareUrl(): string {
+  return window.location.href;
+}
+
+/**
+ * Show a toast notification
+ */
+function showToast(message: string): void {
+  // Dispatch custom event for toast - component should listen for this
+  window.dispatchEvent(new CustomEvent('show-toast', { detail: message }));
+}
+
+/**
+ * Share actions for each platform
+ */
+export const shareActions: Record<string, (data: ShareData) => void> = {
+  SMS: (data) => {
+    const url = getShareUrl();
+    const body = data.linkStyle === 'inline'
+      ? `${data.message} ${url}`
+      : `${data.message}\n\n${url}`;
+    
+    // Use different format for iOS vs Android
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const smsUrl = isIOS
+      ? `sms:&body=${encodeURIComponent(body)}`
+      : `sms:?body=${encodeURIComponent(body)}`;
+    
+    window.location.href = smsUrl;
+    showToast('Opening Messages...');
   },
 
-  openEmail(hotspot: Hotspot, currentUrl: string) {
-    const subject = hotspot.metadata.subject || '';
-    const body = hotspot.metadata.messageLink || hotspot.metadata.message || '';
-    const fullBody = `${body} ${currentUrl}`.trim();
+  EMAIL: (data) => {
+    const url = getShareUrl();
+    const body = data.linkStyle === 'inline'
+      ? `${data.message} ${url}`
+      : `${data.message}\n\n${url}`;
+    
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(data.subject)}&body=${encodeURIComponent(body)}`;
+    window.location.href = mailtoUrl;
+    showToast('Opening Email...');
+  },
+
+  FACEBOOK: () => {
+    const url = getShareUrl();
     window.open(
-      `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullBody)}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      '_blank',
+      'width=600,height=400'
+    );
+    showToast('Opening Facebook...');
+  },
+
+  TWITTER: (data) => {
+    const url = getShareUrl();
+    const text = data.message || '';
+    window.open(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+      '_blank',
+      'width=600,height=400'
+    );
+    showToast('Opening Twitter...');
+  },
+
+  WHATSAPP: (data) => {
+    const url = getShareUrl();
+    const text = data.message ? `${data.message} ${url}` : url;
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(text)}`,
       '_blank'
     );
+    showToast('Opening WhatsApp...');
   },
 
-  openTwitter(hotspot: Hotspot, currentUrl: string) {
-    const message = hotspot.metadata.message || '';
-    const text = `${message} ${currentUrl}`.trim();
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
-  },
-
-  openWhatsApp(hotspot: Hotspot, currentUrl: string) {
-    const message = hotspot.metadata.message || '';
-    const text = `${message} ${currentUrl}`.trim();
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-  },
-
-  openBluesky(hotspot: Hotspot, currentUrl: string) {
-    const message = hotspot.metadata.message || '';
-    const text = `${message} ${currentUrl}`.trim();
-    window.open(`https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`, '_blank');
-  },
-
-  openFacebook(currentUrl: string) {
+  LINKEDIN: () => {
+    const url = getShareUrl();
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`,
-      '_blank'
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      '_blank',
+      'width=600,height=400'
     );
+    showToast('Opening LinkedIn...');
   },
 
-  openLinkedIn(currentUrl: string) {
+  INSTAGRAM: () => {
+    const url = getShareUrl();
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Link copied! Paste in Instagram.');
+    }).catch(() => {
+      showToast('Could not copy link.');
+    });
+  },
+
+  BLUESKY: (data) => {
+    const url = getShareUrl();
+    const text = data.message ? `${data.message} ${url}` : url;
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`,
-      '_blank'
+      `https://bsky.app/intent/compose?text=${encodeURIComponent(text)}`,
+      '_blank',
+      'width=600,height=600'
     );
+    showToast('Opening Bluesky...');
   },
 
-  copyToClipboard(currentUrl: string) {
-    navigator.clipboard.writeText(currentUrl);
-    return true;
-  },
-
-  async nativeShare(hotspot: Hotspot, currentUrl: string) {
-    const title = hotspot.metadata.title || 'Check this out!';
+  SHARE: async (data) => {
+    const url = getShareUrl();
     
     if (navigator.share) {
       try {
         await navigator.share({
-          title,
-          url: currentUrl,
+          title: data.message || 'Check this out',
+          url: url,
         });
-        return true;
-      } catch (error) {
-        console.error('Error sharing:', error);
-        return false;
+        showToast('Shared!');
+      } catch (err) {
+        // User cancelled or error
+        if ((err as Error).name !== 'AbortError') {
+          showToast('Could not share.');
+        }
       }
     } else {
-      this.copyToClipboard(currentUrl);
-      return true;
-    }
-  },
-
-  handleHotspotClick(hotspot: Hotspot, currentUrl: string): boolean {
-    switch (hotspot.type) {
-      case 'SMS':
-        this.openSMS(hotspot, currentUrl);
-        return true;
-      case 'EMAIL':
-        this.openEmail(hotspot, currentUrl);
-        return true;
-      case 'TWITTER':
-        this.openTwitter(hotspot, currentUrl);
-        return true;
-      case 'WHATSAPP':
-        this.openWhatsApp(hotspot, currentUrl);
-        return true;
-      case 'BLUESKY':
-        this.openBluesky(hotspot, currentUrl);
-        return true;
-      case 'FACEBOOK':
-        this.openFacebook(currentUrl);
-        return true;
-      case 'LINKEDIN':
-        this.openLinkedIn(currentUrl);
-        return true;
-      case 'INSTAGRAM':
-        return this.copyToClipboard(currentUrl);
-      case 'SHARE':
-        this.nativeShare(hotspot, currentUrl);
-        return true;
-      default:
-        return false;
+      // Fallback to clipboard
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard!');
+      }).catch(() => {
+        showToast('Could not copy link.');
+      });
     }
   },
 };
