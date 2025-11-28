@@ -57,7 +57,6 @@ serve(async (req) => {
             input: 'upload-pptx',
             output_format: 'png',
             input_format: 'pptx',
-            filename: 'slide-{page}',
             pages: 'all',
             pixel_density: 150,
             quality: 85,
