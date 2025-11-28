@@ -15,6 +15,8 @@ interface PptxUploaderProps {
 
 export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const [totalSlides, setTotalSlides] = useState(0);
+  const [currentStep, setCurrentStep] = useState('');
 
   const handlePptxUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -26,6 +28,8 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
     }
 
     setIsProcessing(true);
+    setTotalSlides(0);
+    setCurrentStep('Parsing...');
     console.log('🚀 Starting PPTX upload:', file.name);
     
     try {
@@ -35,9 +39,11 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
       const parser = new PptxParser();
       await parser.loadFile(file);
       const parsed = await parser.parse();
+      setTotalSlides(parsed.metadata.totalSlides);
       console.log('✅ Parsed:', parsed.metadata);
 
       // Step 2: Upload file to Supabase Storage
+      setCurrentStep('Uploading...');
       console.log('☁️ Step 2: Uploading to storage...');
       toast.info('Uploading file to storage...');
       const fileName = `${Date.now()}-${file.name}`;
@@ -52,8 +58,9 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
       console.log('✅ Uploaded:', fileName);
 
       // Step 3: Convert PPTX to images via CloudConvert
+      setCurrentStep(`Converting ${totalSlides} slides...`);
       console.log('🎨 Step 3: Converting to images...');
-      toast.info('Converting slides to images (this may take up to 1 minute)...');
+      toast.info(`Converting ${totalSlides} slides to images (this may take up to 1 minute)...`);
       const { data, error: convertError } = await supabase.functions.invoke('convert-pptx', {
         body: { filePath: fileName },
       });
@@ -65,6 +72,7 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
       console.log('✅ Converted:', data);
 
       // Step 4: Match images with parsed metadata and create legacy SlideData format
+      setCurrentStep('Finalizing...');
       console.log('🔗 Step 4: Matching images with metadata...');
       const slides: SlideData[] = parsed.slides.map((parsedSlide, index) => ({
         ...parsedSlide,
@@ -120,8 +128,13 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
             <div className="flex items-center gap-3 text-sm p-6 bg-primary/5 border-2 border-primary/20 rounded-lg">
               <Loader2 className="w-6 h-6 animate-spin text-primary flex-shrink-0" />
               <div className="space-y-1">
-                <p className="font-semibold text-foreground">Processing your presentation...</p>
-                <p className="text-xs text-muted-foreground">Parsing → Uploading → Converting to images</p>
+                <p className="font-semibold text-foreground">
+                  {currentStep}
+                  {totalSlides > 0 && currentStep.includes('Converting') && (
+                    <span className="ml-2 text-primary">({totalSlides} slides)</span>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">Parsing → Uploading → Converting → Finalizing</p>
                 <p className="text-xs text-muted-foreground">This may take up to 1 minute depending on file size.</p>
               </div>
             </div>
