@@ -57,9 +57,11 @@ serve(async (req) => {
             input: 'upload-pptx',
             output_format: 'png',
             input_format: 'pptx',
+            engine: 'office',
+            engine_version: '2019',
             pages: 'all',
-            pixel_density: 150,
-            quality: 85,
+            pixel_density: 120,
+            quality: 90,
             fit: 'max',
             zoom: 1,
           },
@@ -87,10 +89,13 @@ serve(async (req) => {
     const uploadUrl = uploadTask.result.form.url;
     const uploadParameters = uploadTask.result.form.parameters;
 
-    // Extract filename from path (remove timestamp prefix if present)
-    const originalFileName = filePath.includes('-') 
+    // Extract and sanitize filename (remove timestamp prefix and special characters)
+    let originalFileName = filePath.includes('-') 
       ? filePath.substring(filePath.indexOf('-') + 1) 
       : filePath;
+    
+    // Sanitize filename: remove spaces and special characters except dots, hyphens, underscores
+    originalFileName = originalFileName.replace(/[^\w\-\.]/g, '_');
     
     const formData = new FormData();
     Object.entries(uploadParameters).forEach(([key, value]) => {
@@ -151,9 +156,15 @@ serve(async (req) => {
       
       console.error('Failed tasks details:', JSON.stringify(errorDetails, null, 2));
       
-      const errorMessage = errorDetails.length > 0 
-        ? `CloudConvert conversion failed: ${errorDetails[0].message} (${errorDetails[0].code})`
-        : 'CloudConvert job failed';
+      let errorMessage = 'CloudConvert job failed';
+      if (errorDetails.length > 0) {
+        const firstError = errorDetails[0];
+        if (firstError.code === 'UNKNOWN_ERROR' || firstError.message === 'Conversion failed') {
+          errorMessage = 'This PowerPoint file could not be converted. This may be due to: unsupported features (embedded videos, custom fonts, complex animations), file corruption, or file complexity. Please try simplifying your presentation or use a different file.';
+        } else {
+          errorMessage = `CloudConvert conversion failed: ${firstError.message} (${firstError.code})`;
+        }
+      }
       
       throw new Error(errorMessage);
     }
