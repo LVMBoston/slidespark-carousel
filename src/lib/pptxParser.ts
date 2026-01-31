@@ -3,6 +3,7 @@ import { ParsedSlide, SlideType, Hotspot, ParsedPptx, PptxMetadata, DownloadFile
 
 export class PptxParser {
   private zip: JSZip | null = null;
+  private slideImages: Map<number, string> = new Map();
 
   async loadFile(file: File): Promise<void> {
     const arrayBuffer = await file.arrayBuffer();
@@ -13,6 +14,9 @@ export class PptxParser {
     if (!this.zip) {
       throw new Error('No PPTX file loaded');
     }
+
+    // Extract all media files first
+    await this.extractSlideImages();
 
     const slides: ParsedSlide[] = [];
     const slideFiles = Object.keys(this.zip.files)
@@ -39,10 +43,13 @@ export class PptxParser {
       const hotspots = await this.extractHotspots(slideContent, slideNumber);
       const downloadFiles = this.extractDownloadFiles(speakerNotes);
 
+      // Get the extracted image for this slide
+      const slideImageUrl = await this.getSlideImageUrl(slideNumber, slideContent);
+
       const slide: ParsedSlide = {
         index: slideNumber,
         slideType: slideType,
-        imageFile: '',
+        imageFile: slideImageUrl,
         isHidden,
         hotspots,
         speakerNotes: speakerNotes || '',
@@ -58,6 +65,89 @@ export class PptxParser {
     const metadata = this.generateMetadata(slides);
 
     return { slides, metadata };
+  }
+
+  /**
+   * Extract all images from the PPTX media folder
+   */
+  private async extractSlideImages(): Promise<void> {
+    if (!this.zip) return;
+
+    const mediaFiles = Object.keys(this.zip.files)
+      .filter(name => name.startsWith('ppt/media/') && /\.(png|jpg|jpeg|gif|webp)$/i.test(name));
+
+    console.log('📷 Found media files:', mediaFiles.length);
+
+    for (const mediaFile of mediaFiles) {
+      const blob = await this.zip.file(mediaFile)?.async('blob');
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        // Store with the filename as key for later lookup
+        const filename = mediaFile.split('/').pop() || '';
+        this.slideImages.set(this.getMediaIndex(filename), url);
+      }
+    }
+  }
+
+  /**
+   * Get index from media filename (e.g., "image1.png" -> 1)
+   */
+  private getMediaIndex(filename: string): number {
+    const match = filename.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  }
+
+  /**
+   * Get the image URL for a specific slide by analyzing its relationships
+   */
+  private async getSlideImageUrl(slideNumber: number, slideContent: string): Promise<string> {
+    if (!this.zip) return '';
+
+    try {
+      // Read the slide relationships file
+      const relsPath = `ppt/slides/_rels/slide${slideNumber}.xml.rels`;
+      const relsContent = await this.zip.file(relsPath)?.async('text');
+      
+      if (relsContent) {
+        // Find image relationships
+        const imageRels = relsContent.matchAll(/Target="([^"]*\.(png|jpg|jpeg|gif|webp))"/gi);
+        
+        for (const match of imageRels) {
+          const targetPath = match[1];
+          // Resolve relative path
+          const fullPath = targetPath.startsWith('../') 
+            ? `ppt/${targetPath.replace('../', '')}`
+            : `ppt/slides/${targetPath}`;
+          
+          const blob = await this.zip.file(fullPath)?.async('blob');
+          if (blob) {
+            return URL.createObjectURL(blob);
+          }
+        }
+      }
+
+      // Fallback: try to find image by slide number pattern
+      const possibleNames = [
+        `ppt/media/image${slideNumber}.png`,
+        `ppt/media/image${slideNumber}.jpg`,
+        `ppt/media/image${slideNumber}.jpeg`,
+        `ppt/media/slide${slideNumber}.png`,
+        `ppt/media/slide${slideNumber}.jpg`,
+      ];
+
+      for (const name of possibleNames) {
+        const blob = await this.zip.file(name)?.async('blob');
+        if (blob) {
+          return URL.createObjectURL(blob);
+        }
+      }
+
+      // Last resort: use the Nth image from media folder
+      return this.slideImages.get(slideNumber) || '';
+    } catch (error) {
+      console.warn(`Could not extract image for slide ${slideNumber}:`, error);
+      return '';
+    }
   }
 
   private async getSpeakerNotes(slideNumber: number): Promise<string> {
@@ -230,5 +320,13 @@ export class PptxParser {
       hiddenSlides: slides.length - visibleSlides.length,
       slideTypes,
     };
+  }
+
+  /**
+   * Cleanup: revoke object URLs when done
+   */
+  cleanup(): void {
+    this.slideImages.forEach(url => URL.revokeObjectURL(url));
+    this.slideImages.clear();
   }
 }

@@ -1,11 +1,9 @@
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { SlideData } from '@/types/pptx';
 import { PptxParser } from '@/lib/pptxParser';
 
@@ -29,66 +27,51 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
 
     setIsProcessing(true);
     setTotalSlides(0);
-    setCurrentStep('Parsing...');
+    setCurrentStep('Parsing presentation...');
     console.log('🚀 Starting PPTX upload:', file.name);
     
     try {
-      // Step 1: Parse PPTX metadata
-      console.log('📋 Step 1: Parsing metadata...');
-      toast.info('Parsing presentation metadata...');
+      // Step 1: Parse PPTX and extract images directly (no external conversion needed)
+      console.log('📋 Parsing and extracting slide images...');
+      toast.info('Parsing presentation and extracting slides...');
+      
       const parser = new PptxParser();
       await parser.loadFile(file);
+      
+      setCurrentStep('Extracting slides...');
       const parsed = await parser.parse();
       setTotalSlides(parsed.metadata.totalSlides);
       console.log('✅ Parsed:', parsed.metadata);
 
-      // Step 2: Upload file to Supabase Storage
-      setCurrentStep('Uploading...');
-      console.log('☁️ Step 2: Uploading to storage...');
-      toast.info('Uploading file to storage...');
-      const fileName = `${Date.now()}-${file.name}`;
-      const { error: uploadError } = await supabase.storage
-        .from('presentations')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('❌ Upload error:', uploadError);
-        throw uploadError;
-      }
-      console.log('✅ Uploaded:', fileName);
-
-      // Step 3: Convert PPTX to images via CloudConvert
-      setCurrentStep(`Converting ${totalSlides} slides...`);
-      console.log('🎨 Step 3: Converting to images...');
-      toast.info(`Converting ${totalSlides} slides to images (this may take up to 1 minute)...`);
-      const { data, error: convertError } = await supabase.functions.invoke('convert-pptx', {
-        body: { filePath: fileName },
-      });
-
-      if (convertError) {
-        console.error('❌ Conversion error:', convertError);
-        throw convertError;
-      }
-      console.log('✅ Converted:', data);
-
-      // Step 4: Match images with parsed metadata and create legacy SlideData format
+      // Step 2: Create SlideData format with extracted images
       setCurrentStep('Finalizing...');
-      console.log('🔗 Step 4: Matching images with metadata...');
-      const slides: SlideData[] = parsed.slides.map((parsedSlide, index) => ({
+      console.log('🔗 Creating slide data...');
+      
+      const slides: SlideData[] = parsed.slides.map((parsedSlide) => ({
         ...parsedSlide,
         type: parsedSlide.slideType,
-        imageUrl: data.images[index]?.url || parsedSlide.imageFile,
+        imageUrl: parsedSlide.imageFile, // Use extracted image from PPTX
       }));
+      
       console.log('✅ Final slides:', slides.length, 'slides created');
 
-      // Filter visible slides only
+      // Count slides with images
+      const slidesWithImages = slides.filter(s => s.imageUrl).length;
       const visibleSlides = slides.filter(s => !s.isHidden);
 
       onImagesUploaded(slides);
-      toast.success(
-        `Presentation converted! ${visibleSlides.length} slides loaded ` +
-        `(${parsed.metadata.hiddenSlides} hidden).`
-      );
+      
+      if (slidesWithImages === 0) {
+        toast.warning(
+          `Presentation loaded with ${visibleSlides.length} slides, but no embedded images were found. ` +
+          `Some PPTX files use vector graphics instead of embedded images.`
+        );
+      } else {
+        toast.success(
+          `Presentation loaded! ${visibleSlides.length} slides ` +
+          `(${parsed.metadata.hiddenSlides} hidden, ${slidesWithImages} with images).`
+        );
+      }
     } catch (error) {
       console.error('❌ Error processing PPTX:', error);
       toast.error('Failed to process presentation. Please try again.');
@@ -105,7 +88,7 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
           Upload PowerPoint Presentation
         </CardTitle>
         <CardDescription>
-          Upload your .pptx file and we'll automatically convert it to interactive slides
+          Upload your .pptx file and we'll extract and display your slides instantly
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -130,24 +113,24 @@ export const PptxUploader = ({ onImagesUploaded }: PptxUploaderProps) => {
               <div className="space-y-1">
                 <p className="font-semibold text-foreground">
                   {currentStep}
-                  {totalSlides > 0 && currentStep.includes('Converting') && (
+                  {totalSlides > 0 && (
                     <span className="ml-2 text-primary">({totalSlides} slides)</span>
                   )}
                 </p>
-                <p className="text-xs text-muted-foreground">Parsing → Uploading → Converting → Finalizing</p>
-                <p className="text-xs text-muted-foreground">This may take up to 1 minute depending on file size.</p>
+                <p className="text-xs text-muted-foreground">Parsing → Extracting → Finalizing</p>
+                <p className="text-xs text-muted-foreground">Processing happens locally in your browser.</p>
               </div>
             </div>
           )}
 
           <div className="p-4 bg-muted rounded-lg space-y-2 text-sm">
-            <p className="font-medium">✨ Automatic Features</p>
+            <p className="font-medium">✨ Features</p>
             <ul className="space-y-1 text-muted-foreground list-disc list-inside">
               <li>Parses speaker notes for video/GIF/link slides</li>
               <li>Extracts hotspots and social sharing buttons</li>
               <li>Respects hidden slides and [DOCUMENTATION] notes</li>
-              <li>Converts each slide to high-quality PNG</li>
-              <li>Maximum file size: 20MB</li>
+              <li>Extracts embedded images directly from PPTX</li>
+              <li>No external conversion - fast local processing</li>
             </ul>
           </div>
         </div>
