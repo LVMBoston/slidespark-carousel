@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SlideData } from '@/types/pptx';
 import { PptxUploader } from '@/components/PptxUploader';
+import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
 import { Presentation } from 'lucide-react';
@@ -37,6 +38,7 @@ const Index = () => {
         {/* Upload Section */}
         <div className="mb-12 space-y-6">
           <PptxUploader onImagesUploaded={handleImagesUploaded} />
+          <ZipUploader onImagesUploaded={handleImagesUploaded} />
           <VimeoInput onSlideCreated={handleVimeoSlide} />
         </div>
 
