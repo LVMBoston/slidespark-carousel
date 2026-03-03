@@ -38,6 +38,7 @@ const Index = () => {
         {/* Upload Section */}
         <div className="mb-12 space-y-6">
           <PptxUploader onImagesUploaded={handleImagesUploaded} />
+          <ZipUploader onImagesUploaded={handleImagesUploaded} />
           <VimeoInput onSlideCreated={handleVimeoSlide} />
         </div>
 
