@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SlideData } from '@/types/pptx';
 import { PptxUploader } from '@/components/PptxUploader';
+import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
 import { Presentation } from 'lucide-react';
