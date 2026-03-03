@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { SlideData } from '@/types/pptx';
 import { PptxUploader } from '@/components/PptxUploader';
+import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
 import { Presentation } from 'lucide-react';
 
@@ -9,6 +10,10 @@ const Index = () => {
 
   const handleImagesUploaded = (updatedSlides: SlideData[]) => {
     setSlides(updatedSlides);
+  };
+
+  const handleVimeoSlide = (slide: SlideData) => {
+    setSlides((prev) => [...prev, { ...slide, index: prev.length + 1 }]);
   };
 
   return (
