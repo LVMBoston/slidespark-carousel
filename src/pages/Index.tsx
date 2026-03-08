@@ -53,6 +53,47 @@ const Index = () => {
           </p>
         </header>
 
+        {/* Status Bar */}
+        {slides.length > 0 && (() => {
+          const visible = slides.filter(s => !s.isHidden);
+          const counts = visible.reduce((acc, s) => {
+            acc[s.type] = (acc[s.type] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+          return (
+            <div className="flex items-center justify-center gap-3 flex-wrap mb-8 px-4 py-2.5 rounded-full bg-muted/60 border border-border/50 max-w-2xl mx-auto">
+              <Badge variant="secondary" className="gap-1.5">
+                <Presentation className="w-3.5 h-3.5" />
+                {visible.length} total
+              </Badge>
+              {(counts.image || 0) > 0 && (
+                <Badge variant="outline" className="gap-1.5">
+                  <Image className="w-3.5 h-3.5" />
+                  {counts.image} image{counts.image > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {((counts.vimeo || 0) + (counts.video || 0) + (counts.youtube || 0)) > 0 && (
+                <Badge variant="outline" className="gap-1.5">
+                  <Video className="w-3.5 h-3.5" />
+                  {(counts.vimeo || 0) + (counts.video || 0) + (counts.youtube || 0)} video{((counts.vimeo || 0) + (counts.video || 0) + (counts.youtube || 0)) > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {(counts.gif || 0) > 0 && (
+                <Badge variant="outline" className="gap-1.5">
+                  <FileText className="w-3.5 h-3.5" />
+                  {counts.gif} GIF{counts.gif > 1 ? 's' : ''}
+                </Badge>
+              )}
+              {(counts.link || 0) > 0 && (
+                <Badge variant="outline" className="gap-1.5">
+                  <Link className="w-3.5 h-3.5" />
+                  {counts.link} link{counts.link > 1 ? 's' : ''}
+                </Badge>
+              )}
+            </div>
+          );
+        })()}
+
         {/* Upload Section */}
         <div className="mb-12 space-y-6">
           <Collapsible>
