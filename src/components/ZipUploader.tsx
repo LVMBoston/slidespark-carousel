@@ -15,6 +15,7 @@ const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|gif|webp)$/i;
 
 export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
