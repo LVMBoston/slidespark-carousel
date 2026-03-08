@@ -97,12 +97,12 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
         {visibleSlides.length > 1 && (
           <>
             <div
-              className="absolute left-0 top-0 w-[15%] h-full z-30"
+              className="absolute left-0 top-0 w-[15%] h-[85%] z-30"
               onTouchStart={handleTouchStart}
               onTouchEnd={(e) => handleSwipeEnd(e, 'right')}
             />
             <div
-              className="absolute right-0 top-0 w-[15%] h-full z-30"
+              className="absolute right-0 top-0 w-[15%] h-[85%] z-30"
               onTouchStart={handleTouchStart}
               onTouchEnd={(e) => handleSwipeEnd(e, 'left')}
             />
@@ -132,7 +132,7 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
         )}
 
         {/* Slide Counter */}
-        <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+        <div className="absolute bottom-4 right-4 z-40 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
           {currentIndex + 1} / {visibleSlides.length}
         </div>
       </div>
