@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 const Index = () => {
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [showCarousel, setShowCarousel] = useState(false);
+  const [carouselKey, setCarouselKey] = useState(0);
 
   const handleImagesUploaded = (updatedSlides: SlideData[]) => {
     setSlides(updatedSlides);
