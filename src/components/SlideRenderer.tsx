@@ -13,6 +13,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [gifKey, setGifKey] = useState(Date.now());
   const [isLoading, setIsLoading] = useState(true);
+  const [isVimeoPlaying, setIsVimeoPlaying] = useState(false);
 
   useEffect(() => {
     if (slide.type === 'gif' && isActive) {
@@ -25,6 +26,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
       videoRef.current?.pause();
       if (iframeRef.current && slide.type === 'vimeo') {
         iframeRef.current.contentWindow?.postMessage('{"method":"pause"}', '*');
+        setIsVimeoPlaying(false);
       }
     }
   }, [isActive, slide.type]);
@@ -41,6 +43,13 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     } else {
       video.pause();
     }
+  };
+
+  const handleVimeoTap = () => {
+    if (!iframeRef.current) return;
+    const method = isVimeoPlaying ? 'pause' : 'play';
+    iframeRef.current.contentWindow?.postMessage(JSON.stringify({ method }), '*');
+    setIsVimeoPlaying((prev) => !prev);
   };
 
   const renderContent = () => {
