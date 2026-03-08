@@ -68,7 +68,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
 
       case 'video':
         return (
-          <>
+          <div className="relative w-full h-full">
             {isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-muted">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -76,15 +76,17 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
             )}
             <video
               ref={videoRef}
-              className="w-full h-full object-contain cursor-pointer"
+              className="w-full h-full object-contain"
               poster={slide.imageUrl}
-              controls
-              onClick={handleVideoTap}
               onLoadedData={handleImageLoad}
             >
               {slide.mediaUrl && <source src={slide.mediaUrl} type="video/mp4" />}
             </video>
-          </>
+            <div
+              className="absolute inset-0 cursor-pointer"
+              onClick={handleVideoTap}
+            />
+          </div>
         );
 
       case 'gif':
