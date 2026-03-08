@@ -67,7 +67,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
         return (
           <iframe
             ref={iframeRef}
-            src={`https://player.vimeo.com/video/${slide.videoId}?autoplay=0`}
+            src={`https://player.vimeo.com/video/${slide.videoId}?autoplay=0&api=1` }
             className="w-full h-full"
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
