@@ -4,7 +4,7 @@ import { PptxUploader } from '@/components/PptxUploader';
 import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
-import { Presentation, Play, ChevronDown, Image, Video, FileText, Link, X } from 'lucide-react';
+import { Presentation, Play, ChevronDown, Image, Video, FileText, Link, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 const Index = () => {
   const [slides, setSlides] = useState<SlideData[]>([]);
   const [showCarousel, setShowCarousel] = useState(false);
+  const [carouselKey, setCarouselKey] = useState(0);
 
   const handleImagesUploaded = (updatedSlides: SlideData[]) => {
     setSlides(updatedSlides);
@@ -132,6 +133,14 @@ const Index = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => setCarouselKey(k => k + 1)}
+                title="Reset carousel (restart all videos)"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => { setSlides([]); setShowCarousel(false); }}
                 title="Clear carousel"
               >
@@ -142,7 +151,7 @@ const Index = () => {
               Use arrow keys or navigation buttons to browse slides
             </p>
             <div className="max-w-5xl mx-auto">
-              <PptxCarousel slides={slides} />
+              <PptxCarousel key={carouselKey} slides={slides} />
             </div>
           </div>
         )}
