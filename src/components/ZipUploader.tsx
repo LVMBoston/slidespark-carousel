@@ -52,9 +52,7 @@ export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
         const url = URL.createObjectURL(blob);
         slides.push({
           index: i + 1,
-          slideType: 'image',
           type: 'image',
-          imageFile: url,
           imageUrl: url,
           hotspots: [],
           isHidden: false,

@@ -42,9 +42,7 @@ export const VimeoInput = ({ slides, onSlideInserted }: VimeoInputProps) => {
 
     const slide: SlideData = {
       index: 1,
-      slideType: 'vimeo',
       type: 'vimeo',
-      imageFile: '',
       imageUrl: '',
       videoId,
       mediaUrl: `https://player.vimeo.com/video/${videoId}`,
