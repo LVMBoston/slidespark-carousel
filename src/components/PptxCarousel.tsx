@@ -66,10 +66,15 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
     <div className="w-full h-full flex flex-col gap-4">
       {/* Carousel Container */}
       <div className="relative w-full aspect-video bg-card rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
-        <SlideRenderer 
-          slide={currentSlide} 
-          isActive={true} 
-        />
+        {visibleSlides.map((slide, i) => (
+          <div
+            key={slide.index}
+            style={{ display: i === currentIndex ? 'block' : 'none' }}
+            className="w-full h-full"
+          >
+            <SlideRenderer slide={slide} isActive={i === currentIndex} />
+          </div>
+        ))}
 
         {/* Navigation Arrows */}
         {visibleSlides.length > 1 && (
