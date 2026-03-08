@@ -169,7 +169,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
         <button
           type="button"
           aria-label="Toggle Vimeo playback"
-          className="absolute inset-0 z-20 cursor-pointer"
+          className="absolute inset-0 z-20 cursor-pointer bg-transparent border-0 p-0"
           onPointerUp={handleVimeoTap}
         />
       )}
