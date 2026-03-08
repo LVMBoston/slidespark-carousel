@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Player from '@vimeo/player';
-import { SlideData } from '@/types/pptx';
+import { SlideData } from '@/types/slides';
 import { HotspotOverlay } from './HotspotOverlay';
 import { Loader2 } from 'lucide-react';
 

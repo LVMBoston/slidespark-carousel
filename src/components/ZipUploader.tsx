@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Archive, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { SlideData } from '@/types/pptx';
+import { SlideData } from '@/types/slides';
 import JSZip from 'jszip';
 
 interface ZipUploaderProps {
@@ -52,9 +52,7 @@ export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
         const url = URL.createObjectURL(blob);
         slides.push({
           index: i + 1,
-          slideType: 'image',
           type: 'image',
-          imageFile: url,
           imageUrl: url,
           hotspots: [],
           isHidden: false,

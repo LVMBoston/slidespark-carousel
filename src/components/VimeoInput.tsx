@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Video } from 'lucide-react';
 import { toast } from 'sonner';
-import { SlideData } from '@/types/pptx';
+import { SlideData } from '@/types/slides';
 
 interface VimeoInputProps {
   slides: SlideData[];
@@ -42,9 +42,7 @@ export const VimeoInput = ({ slides, onSlideInserted }: VimeoInputProps) => {
 
     const slide: SlideData = {
       index: 1,
-      slideType: 'vimeo',
       type: 'vimeo',
-      imageFile: '',
       imageUrl: '',
       videoId,
       mediaUrl: `https://player.vimeo.com/video/${videoId}`,

@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { SlideData } from '@/types/pptx';
-import { PptxUploader } from '@/components/PptxUploader';
+import { SlideData } from '@/types/slides';
 import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
-import { Presentation, Play, ChevronDown, Image, Video, FileText, Link, X, RotateCcw } from 'lucide-react';
+import { Presentation, Play, Image, Video, FileText, Link, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
@@ -47,10 +45,10 @@ const Index = () => {
             </div>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-3">
-            PowerPoint Carousel Builder
+            Interactive Carousel Builder
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Transform your PowerPoint presentations into interactive carousels with video, GIFs, and social sharing
+            Build interactive carousels with images, video, GIFs, and social sharing
           </p>
         </header>
 
@@ -97,20 +95,6 @@ const Index = () => {
 
         {/* Upload Section */}
         <div className="mb-12 space-y-6">
-          <Collapsible>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2">
-                <span className="flex items-center gap-2">
-                  <Presentation className="w-4 h-4" />
-                  Upload PowerPoint Presentation
-                </span>
-                <ChevronDown className="w-4 h-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-3">
-              <PptxUploader onImagesUploaded={handleImagesUploaded} />
-            </CollapsibleContent>
-          </Collapsible>
           <ZipUploader onImagesUploaded={handleImagesUploaded} />
           <VimeoInput slides={slides} onSlideInserted={handleVimeoInsert} />
         </div>

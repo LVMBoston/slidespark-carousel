@@ -22,10 +22,10 @@ export interface DownloadFile {
   label: string;
 }
 
-export interface ParsedSlide {
+export interface SlideData {
   index: number;
-  slideType: SlideType;
-  imageFile: string;
+  type: SlideType;
+  imageUrl: string;
   mediaUrl?: string;
   videoId?: string;
   linkUrl?: string;
@@ -33,22 +33,4 @@ export interface ParsedSlide {
   speakerNotes?: string;
   isHidden: boolean;
   downloadFiles: DownloadFile[];
-}
-
-// Legacy compatibility - map old SlideData to ParsedSlide
-export interface SlideData extends ParsedSlide {
-  type: SlideType;
-  imageUrl: string;
-}
-
-export interface PptxMetadata {
-  totalSlides: number;
-  visibleSlides: number;
-  hiddenSlides: number;
-  slideTypes: Record<SlideType, number>;
-}
-
-export interface ParsedPptx {
-  slides: ParsedSlide[];
-  metadata: PptxMetadata;
 }
