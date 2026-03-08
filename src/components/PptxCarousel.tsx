@@ -94,7 +94,7 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
         )}
 
         {/* Slide Counter */}
-        <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
+        <div className="absolute bottom-4 right-4 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
           {currentIndex + 1} / {visibleSlides.length}
         </div>
       </div>
