@@ -84,20 +84,31 @@ export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="zip-file">Zip File (.zip)</Label>
-          <Input
-            id="zip-file"
+        <div className="flex flex-col gap-3">
+          <input
+            ref={fileInputRef}
             type="file"
             accept=".zip"
             onChange={handleZipUpload}
-            disabled={isProcessing}
-            className="cursor-pointer"
+            className="hidden"
           />
-          {isProcessing && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Extracting images...
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="gap-2"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Extracting images...
+              </>
+            ) : (
+              <>
+                <Archive className="w-4 h-4" />
+                Choose Zip File
+              </>
+            )}
+          </Button>
             </div>
           )}
         </div>
