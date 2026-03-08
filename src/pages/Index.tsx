@@ -133,6 +133,14 @@ const Index = () => {
               <Button
                 variant="ghost"
                 size="icon"
+                onClick={() => setCarouselKey(k => k + 1)}
+                title="Reset carousel (restart all videos)"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => { setSlides([]); setShowCarousel(false); }}
                 title="Clear carousel"
               >
@@ -143,7 +151,7 @@ const Index = () => {
               Use arrow keys or navigation buttons to browse slides
             </p>
             <div className="max-w-5xl mx-auto">
-              <PptxCarousel slides={slides} />
+              <PptxCarousel key={carouselKey} slides={slides} />
             </div>
           </div>
         )}
