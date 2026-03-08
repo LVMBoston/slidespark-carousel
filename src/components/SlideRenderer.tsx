@@ -32,7 +32,8 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   };
 
   const renderContent = () => {
-    if (!slide.imageUrl) {
+    // Vimeo/YouTube don't need imageUrl
+    if (!slide.imageUrl && slide.type !== 'vimeo' && slide.type !== 'youtube') {
       return (
         <div className="w-full h-full flex items-center justify-center bg-muted">
           <p className="text-muted-foreground">Slide {slide.index}: Upload image to view</p>
