@@ -54,7 +54,7 @@ const Index = () => {
         </header>
 
         {/* Status Bar */}
-        {slides.length > 0 && (() => {
+        {(() => {
           const visible = slides.filter(s => !s.isHidden);
           const counts = visible.reduce((acc, s) => {
             acc[s.type] = (acc[s.type] || 0) + 1;
