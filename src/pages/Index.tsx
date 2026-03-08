@@ -54,7 +54,20 @@ const Index = () => {
 
         {/* Upload Section */}
         <div className="mb-12 space-y-6">
-          <PptxUploader onImagesUploaded={handleImagesUploaded} />
+          <Collapsible>
+            <CollapsibleTrigger asChild>
+              <Button variant="outline" className="w-full max-w-2xl mx-auto flex items-center justify-between gap-2">
+                <span className="flex items-center gap-2">
+                  <Presentation className="w-4 h-4" />
+                  Upload PowerPoint Presentation
+                </span>
+                <ChevronDown className="w-4 h-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <PptxUploader onImagesUploaded={handleImagesUploaded} />
+            </CollapsibleContent>
+          </Collapsible>
           <ZipUploader onImagesUploaded={handleImagesUploaded} />
           <VimeoInput slides={slides} onSlideInserted={handleVimeoInsert} />
         </div>
