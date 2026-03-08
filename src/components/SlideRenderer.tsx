@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Player from '@vimeo/player';
 import { SlideData } from '@/types/pptx';
 import { HotspotOverlay } from './HotspotOverlay';
 import { Loader2 } from 'lucide-react';
@@ -11,6 +12,7 @@ interface SlideRendererProps {
 export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const vimeoPlayerRef = useRef<Player | null>(null);
   const [gifKey, setGifKey] = useState(Date.now());
   const [isLoading, setIsLoading] = useState(true);
 
@@ -21,10 +23,24 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   }, [isActive, slide.type]);
 
   useEffect(() => {
+    if (slide.type !== 'vimeo' || !iframeRef.current) return;
+
+    const player = new Player(iframeRef.current);
+    vimeoPlayerRef.current = player;
+
+    return () => {
+      void player.destroy().catch(() => undefined);
+      if (vimeoPlayerRef.current === player) {
+        vimeoPlayerRef.current = null;
+      }
+    };
+  }, [slide.type, slide.videoId]);
+
+  useEffect(() => {
     if (!isActive) {
       videoRef.current?.pause();
-      if (iframeRef.current && slide.type === 'vimeo') {
-        iframeRef.current.contentWindow?.postMessage('{"method":"pause"}', '*');
+      if (slide.type === 'vimeo' && vimeoPlayerRef.current) {
+        void vimeoPlayerRef.current.pause().catch(() => undefined);
       }
     }
   }, [isActive, slide.type]);
@@ -43,6 +59,17 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     }
   };
 
+  const handleVimeoTap = async () => {
+    const player = vimeoPlayerRef.current;
+    if (!player) return;
+    const paused = await player.getPaused();
+    if (paused) {
+      await player.play();
+    } else {
+      await player.pause();
+    }
+  };
+
   const renderContent = () => {
     // Vimeo/YouTube don't need imageUrl
     if (!slide.imageUrl && slide.type !== 'vimeo' && slide.type !== 'youtube') {
@@ -58,7 +85,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
         return (
           <iframe
             ref={iframeRef}
-            src={`https://player.vimeo.com/video/${slide.videoId}?autoplay=0`}
+            src={`https://player.vimeo.com/video/${slide.videoId}?autoplay=0&api=1`}
             className="w-full h-full"
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
@@ -149,7 +176,20 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     <div className="relative w-full h-full bg-background">
       {renderContent()}
       {slide.type === 'video' && (
-        <div className="absolute inset-0 cursor-pointer z-10" onClick={handleVideoTap} />
+        <button
+          type="button"
+          aria-label="Toggle video playback"
+          className="absolute inset-0 z-20 cursor-pointer bg-transparent border-0 p-0"
+          onPointerUp={handleVideoTap}
+        />
+      )}
+      {slide.type === 'vimeo' && (
+        <button
+          type="button"
+          aria-label="Toggle Vimeo playback"
+          className="absolute inset-0 z-20 cursor-pointer bg-transparent border-0 p-0"
+          onPointerUp={handleVimeoTap}
+        />
       )}
       {slide.imageUrl && <HotspotOverlay hotspots={slide.hotspots} />}
     </div>
