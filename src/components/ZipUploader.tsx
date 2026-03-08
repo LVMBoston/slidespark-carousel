@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Archive, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ const IMAGE_EXTENSIONS = /\.(png|jpg|jpeg|gif|webp)$/i;
 
 export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
   const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleZipUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -83,22 +84,31 @@ export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="zip-file">Zip File (.zip)</Label>
-          <Input
-            id="zip-file"
+        <div className="flex flex-col gap-3">
+          <input
+            ref={fileInputRef}
             type="file"
             accept=".zip"
             onChange={handleZipUpload}
-            disabled={isProcessing}
-            className="cursor-pointer"
+            className="hidden"
           />
-          {isProcessing && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Extracting images...
-            </div>
-          )}
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isProcessing}
+            className="gap-2"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Extracting images...
+              </>
+            ) : (
+              <>
+                <Archive className="w-4 h-4" />
+                Choose Zip File
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
