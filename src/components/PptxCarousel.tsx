@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { SlideData } from '@/types/pptx';
 import { SlideRenderer } from './SlideRenderer';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ interface PptxCarouselProps {
 export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   const visibleSlides = slides.filter(s => !s.isHidden);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,6 +34,22 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + visibleSlides.length) % visibleSlides.length);
   };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleSwipeEnd = useCallback((e: React.TouchEvent, direction: 'left' | 'right') => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    const threshold = 50;
+    if (direction === 'left' && diff < -threshold) {
+      goToNext();
+    } else if (direction === 'right' && diff > threshold) {
+      goToPrevious();
+    }
+    touchStartX.current = null;
+  }, [currentIndex, visibleSlides.length]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
@@ -76,13 +93,29 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
           </div>
         ))}
 
+        {/* Swipe Gesture Zones */}
+        {visibleSlides.length > 1 && (
+          <>
+            <div
+              className="absolute left-0 top-0 w-[15%] h-full z-30"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleSwipeEnd(e, 'right')}
+            />
+            <div
+              className="absolute right-0 top-0 w-[15%] h-full z-30"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleSwipeEnd(e, 'left')}
+            />
+          </>
+        )}
+
         {/* Navigation Arrows */}
         {visibleSlides.length > 1 && (
           <>
             <Button
               variant="secondary"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-90 hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 opacity-90 hover:opacity-100"
               onClick={goToPrevious}
             >
               <ChevronLeft className="w-6 h-6" />
@@ -90,7 +123,7 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
             <Button
               variant="secondary"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 opacity-90 hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 opacity-90 hover:opacity-100"
               onClick={goToNext}
             >
               <ChevronRight className="w-6 h-6" />
