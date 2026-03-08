@@ -4,7 +4,8 @@ import { PptxUploader } from '@/components/PptxUploader';
 import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
-import { Presentation } from 'lucide-react';
+import { Presentation, Play } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   const [slides, setSlides] = useState<SlideData[]>([]);
