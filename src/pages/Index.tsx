@@ -44,8 +44,18 @@ const Index = () => {
           <VimeoInput onSlideCreated={handleVimeoSlide} />
         </div>
 
+        {/* Show Carousel Button */}
+        {slides.length > 0 && !showCarousel && (
+          <div className="text-center mb-12">
+            <Button size="lg" onClick={() => setShowCarousel(true)} className="gap-2">
+              <Play className="w-5 h-5" />
+              Display Carousel
+            </Button>
+          </div>
+        )}
+
         {/* Carousel Section */}
-        {slides.length > 0 && (
+        {slides.length > 0 && showCarousel && (
           <div className="mb-12">
             <div className="text-center mb-6">
               <h2 className="text-2xl font-bold mb-2">Interactive Carousel</h2>
