@@ -10,6 +10,7 @@ interface SlideRendererProps {
 
 export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [gifKey, setGifKey] = useState(Date.now());
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,12 +21,13 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   }, [isActive, slide.type]);
 
   useEffect(() => {
-    if (videoRef.current) {
-      if (!isActive) {
-        videoRef.current.pause();
+    if (!isActive) {
+      videoRef.current?.pause();
+      if (iframeRef.current && slide.type === 'vimeo') {
+        iframeRef.current.contentWindow?.postMessage('{"method":"pause"}', '*');
       }
     }
-  }, [isActive]);
+  }, [isActive, slide.type]);
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -45,6 +47,7 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
       case 'vimeo':
         return (
           <iframe
+            ref={iframeRef}
             src={`https://player.vimeo.com/video/${slide.videoId}?autoplay=0`}
             className="w-full h-full"
             allow="autoplay; fullscreen; picture-in-picture"
