@@ -27,7 +27,7 @@ const extractVimeoId = (url: string): string | null => {
 };
 
 export const VimeoInput = ({ slides, onSlideInserted }: VimeoInputProps) => {
-  const [url, setUrl] = useState('');
+  const [url, setUrl] = useState('https://vimeo.com/1135129391');
   const [afterSlide, setAfterSlide] = useState<string>('end');
 
   const visibleSlides = slides.filter(s => !s.isHidden);
