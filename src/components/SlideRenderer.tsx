@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import Player from '@vimeo/player';
 import { SlideData } from '@/types/pptx';
 import { HotspotOverlay } from './HotspotOverlay';
 import { Loader2 } from 'lucide-react';
@@ -11,9 +12,9 @@ interface SlideRendererProps {
 export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const vimeoPlayerRef = useRef<Player | null>(null);
   const [gifKey, setGifKey] = useState(Date.now());
   const [isLoading, setIsLoading] = useState(true);
-  const [isVimeoPlaying, setIsVimeoPlaying] = useState(false);
 
   useEffect(() => {
     if (slide.type === 'gif' && isActive) {
@@ -22,11 +23,24 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   }, [isActive, slide.type]);
 
   useEffect(() => {
+    if (slide.type !== 'vimeo' || !iframeRef.current) return;
+
+    const player = new Player(iframeRef.current);
+    vimeoPlayerRef.current = player;
+
+    return () => {
+      void player.destroy().catch(() => undefined);
+      if (vimeoPlayerRef.current === player) {
+        vimeoPlayerRef.current = null;
+      }
+    };
+  }, [slide.type, slide.videoId]);
+
+  useEffect(() => {
     if (!isActive) {
       videoRef.current?.pause();
-      if (iframeRef.current && slide.type === 'vimeo') {
-        iframeRef.current.contentWindow?.postMessage('{"method":"pause"}', '*');
-        setIsVimeoPlaying(false);
+      if (slide.type === 'vimeo' && vimeoPlayerRef.current) {
+        void vimeoPlayerRef.current.pause().catch(() => undefined);
       }
     }
   }, [isActive, slide.type]);
@@ -45,11 +59,15 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     }
   };
 
-  const handleVimeoTap = () => {
-    if (!iframeRef.current) return;
-    const method = isVimeoPlaying ? 'pause' : 'play';
-    iframeRef.current.contentWindow?.postMessage(JSON.stringify({ method }), '*');
-    setIsVimeoPlaying((prev) => !prev);
+  const handleVimeoTap = async () => {
+    const player = vimeoPlayerRef.current;
+    if (!player) return;
+    const paused = await player.getPaused();
+    if (paused) {
+      await player.play();
+    } else {
+      await player.pause();
+    }
   };
 
   const renderContent = () => {
