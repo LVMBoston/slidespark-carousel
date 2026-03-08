@@ -158,10 +158,20 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     <div className="relative w-full h-full bg-background">
       {renderContent()}
       {slide.type === 'video' && (
-        <div className="absolute inset-0 cursor-pointer z-20" onClick={handleVideoTap} />
+        <button
+          type="button"
+          aria-label="Toggle video playback"
+          className="absolute inset-0 z-20 cursor-pointer"
+          onPointerUp={handleVideoTap}
+        />
       )}
       {slide.type === 'vimeo' && (
-        <div className="absolute inset-0 cursor-pointer z-20" onClick={handleVimeoTap} />
+        <button
+          type="button"
+          aria-label="Toggle Vimeo playback"
+          className="absolute inset-0 z-20 cursor-pointer"
+          onPointerUp={handleVimeoTap}
+        />
       )}
       {slide.imageUrl && <HotspotOverlay hotspots={slide.hotspots} />}
     </div>
