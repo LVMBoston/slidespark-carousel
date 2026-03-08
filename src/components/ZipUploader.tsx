@@ -109,8 +109,6 @@ export const ZipUploader = ({ onImagesUploaded }: ZipUploaderProps) => {
               </>
             )}
           </Button>
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
