@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { SlideData } from '@/types/pptx';
+import { SlideData } from '@/types/slides';
 import { SlideRenderer } from './SlideRenderer';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';

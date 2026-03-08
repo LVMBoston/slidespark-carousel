@@ -1,6 +1,6 @@
 // src/lib/downloadUtils.ts
 
-import type { DownloadFile } from '@/types/pptx';
+import type { DownloadFile } from '@/types/slides';
 
 /**
  * Configuration for download service

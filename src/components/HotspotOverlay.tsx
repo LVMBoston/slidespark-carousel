@@ -1,4 +1,4 @@
-import { Hotspot } from '@/types/pptx';
+import { Hotspot } from '@/types/slides';
 import { shareActions, ShareData } from '@/lib/shareUtils';
 import { Button } from '@/components/ui/button';
 import { 
