@@ -93,13 +93,29 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
           </div>
         ))}
 
+        {/* Swipe Gesture Zones */}
+        {visibleSlides.length > 1 && (
+          <>
+            <div
+              className="absolute left-0 top-0 w-[15%] h-full z-30"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleSwipeEnd(e, 'right')}
+            />
+            <div
+              className="absolute right-0 top-0 w-[15%] h-full z-30"
+              onTouchStart={handleTouchStart}
+              onTouchEnd={(e) => handleSwipeEnd(e, 'left')}
+            />
+          </>
+        )}
+
         {/* Navigation Arrows */}
         {visibleSlides.length > 1 && (
           <>
             <Button
               variant="secondary"
               size="icon"
-              className="absolute left-4 top-1/2 -translate-y-1/2 opacity-90 hover:opacity-100"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-30 opacity-90 hover:opacity-100"
               onClick={goToPrevious}
             >
               <ChevronLeft className="w-6 h-6" />
@@ -107,7 +123,7 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
             <Button
               variant="secondary"
               size="icon"
-              className="absolute right-4 top-1/2 -translate-y-1/2 opacity-90 hover:opacity-100"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-30 opacity-90 hover:opacity-100"
               onClick={goToNext}
             >
               <ChevronRight className="w-6 h-6" />
