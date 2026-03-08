@@ -97,7 +97,7 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
         {visibleSlides.length > 1 && (
           <>
             <div
-              className="absolute left-0 top-0 w-[15%] h-full z-30"
+              className="absolute left-0 top-0 w-[15%] h-[85%] z-30"
               onTouchStart={handleTouchStart}
               onTouchEnd={(e) => handleSwipeEnd(e, 'right')}
             />
