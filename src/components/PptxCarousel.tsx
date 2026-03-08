@@ -12,6 +12,7 @@ interface PptxCarouselProps {
 export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   const visibleSlides = slides.filter(s => !s.isHidden);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -33,6 +34,22 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   const goToPrevious = () => {
     setCurrentIndex((prev) => (prev - 1 + visibleSlides.length) % visibleSlides.length);
   };
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  }, []);
+
+  const handleSwipeEnd = useCallback((e: React.TouchEvent, direction: 'left' | 'right') => {
+    if (touchStartX.current === null) return;
+    const diff = e.changedTouches[0].clientX - touchStartX.current;
+    const threshold = 50;
+    if (direction === 'left' && diff < -threshold) {
+      goToNext();
+    } else if (direction === 'right' && diff > threshold) {
+      goToPrevious();
+    }
+    touchStartX.current = null;
+  }, [currentIndex, visibleSlides.length]);
 
   const goToSlide = (index: number) => {
     setCurrentIndex(index);
