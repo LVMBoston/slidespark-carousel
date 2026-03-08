@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { SlideData } from '@/types/pptx';
-import { PptxUploader } from '@/components/PptxUploader';
+import { SlideData } from '@/types/slides';
 import { ZipUploader } from '@/components/ZipUploader';
 import { VimeoInput } from '@/components/VimeoInput';
 import { PptxCarousel } from '@/components/PptxCarousel';
-import { Presentation, Play, ChevronDown, Image, Video, FileText, Link, X, RotateCcw } from 'lucide-react';
+import { Presentation, Play, Image, Video, FileText, Link, X, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 
 const Index = () => {
