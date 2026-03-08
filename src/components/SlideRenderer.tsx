@@ -33,6 +33,16 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
     setIsLoading(false);
   };
 
+  const handleVideoTap = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  };
+
   const renderContent = () => {
     // Vimeo/YouTube don't need imageUrl
     if (!slide.imageUrl && slide.type !== 'vimeo' && slide.type !== 'youtube') {
