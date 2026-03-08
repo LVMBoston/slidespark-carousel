@@ -127,12 +127,20 @@ const Index = () => {
         {/* Carousel Section */}
         {slides.length > 0 && showCarousel && (
           <div className="mb-12">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold mb-2">Interactive Carousel</h2>
-              <p className="text-muted-foreground">
-                Use arrow keys or navigation buttons to browse slides
-              </p>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <h2 className="text-2xl font-bold">Interactive Carousel</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => { setSlides([]); setShowCarousel(false); }}
+                title="Clear carousel"
+              >
+                <X className="w-5 h-5" />
+              </Button>
             </div>
+            <p className="text-center text-muted-foreground mb-6">
+              Use arrow keys or navigation buttons to browse slides
+            </p>
             <div className="max-w-5xl mx-auto">
               <PptxCarousel slides={slides} />
             </div>
