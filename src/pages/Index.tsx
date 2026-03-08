@@ -15,8 +15,22 @@ const Index = () => {
     setSlides(updatedSlides);
   };
 
-  const handleVimeoSlide = (slide: SlideData) => {
-    setSlides((prev) => [...prev, { ...slide, index: prev.length + 1 }]);
+  const handleVimeoInsert = (slide: SlideData, afterIndex: number | null) => {
+    setSlides((prev) => {
+      const visibleSlides = prev.filter(s => !s.isHidden);
+      if (afterIndex === null || visibleSlides.length === 0) {
+        // Append at end
+        return [...prev, { ...slide, index: prev.length + 1 }];
+      }
+      // Find the actual position in the full array of the visible slide at afterIndex
+      const targetSlide = visibleSlides[afterIndex];
+      const actualIndex = prev.indexOf(targetSlide);
+      const newSlide = { ...slide, index: prev.length + 1 };
+      const updated = [...prev];
+      updated.splice(actualIndex + 1, 0, newSlide);
+      // Re-index
+      return updated.map((s, i) => ({ ...s, index: i + 1 }));
+    });
   };
 
   return (
