@@ -152,6 +152,9 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
   return (
     <div className="relative w-full h-full bg-background">
       {renderContent()}
+      {slide.type === 'video' && (
+        <div className="absolute inset-0 cursor-pointer z-10" onClick={handleVideoTap} />
+      )}
       {slide.imageUrl && <HotspotOverlay hotspots={slide.hotspots} />}
     </div>
   );
