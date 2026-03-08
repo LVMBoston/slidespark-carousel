@@ -76,9 +76,10 @@ export const SlideRenderer = ({ slide, isActive }: SlideRendererProps) => {
             )}
             <video
               ref={videoRef}
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain cursor-pointer"
               poster={slide.imageUrl}
               controls
+              onClick={handleVideoTap}
               onLoadedData={handleImageLoad}
             >
               {slide.mediaUrl && <source src={slide.mediaUrl} type="video/mp4" />}
