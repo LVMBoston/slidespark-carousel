@@ -8,6 +8,7 @@ import { Presentation } from 'lucide-react';
 
 const Index = () => {
   const [slides, setSlides] = useState<SlideData[]>([]);
+  const [showCarousel, setShowCarousel] = useState(false);
 
   const handleImagesUploaded = (updatedSlides: SlideData[]) => {
     setSlides(updatedSlides);
