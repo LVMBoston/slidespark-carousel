@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { SlideData } from '@/types/pptx';
 import { SlideRenderer } from './SlideRenderer';
 import { Button } from '@/components/ui/button';
