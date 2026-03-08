@@ -3,12 +3,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Video } from 'lucide-react';
 import { toast } from 'sonner';
 import { SlideData } from '@/types/pptx';
 
 interface VimeoInputProps {
-  onSlideCreated: (slide: SlideData) => void;
+  slides: SlideData[];
+  onSlideInserted: (slide: SlideData, afterIndex: number | null) => void;
 }
 
 const extractVimeoId = (url: string): string | null => {
@@ -24,8 +26,11 @@ const extractVimeoId = (url: string): string | null => {
   return null;
 };
 
-export const VimeoInput = ({ onSlideCreated }: VimeoInputProps) => {
+export const VimeoInput = ({ slides, onSlideInserted }: VimeoInputProps) => {
   const [url, setUrl] = useState('');
+  const [afterSlide, setAfterSlide] = useState<string>('end');
+
+  const visibleSlides = slides.filter(s => !s.isHidden);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,9 +53,10 @@ export const VimeoInput = ({ onSlideCreated }: VimeoInputProps) => {
       downloadFiles: [],
     };
 
-    onSlideCreated(slide);
+    const insertAfter = afterSlide === 'end' ? null : parseInt(afterSlide, 10);
+    onSlideInserted(slide, insertAfter);
     setUrl('');
-    toast.success('Vimeo video added as a slide');
+    toast.success('Vimeo video inserted');
   };
 
   return (
@@ -61,22 +67,44 @@ export const VimeoInput = ({ onSlideCreated }: VimeoInputProps) => {
           Add Vimeo Video
         </CardTitle>
         <CardDescription>
-          Paste a Vimeo link to add it as a slide in the carousel
+          Paste a Vimeo link and choose where to insert it in the carousel
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <div className="flex-1">
-            <Label htmlFor="vimeo-url" className="sr-only">Vimeo URL</Label>
-            <Input
-              id="vimeo-url"
-              type="url"
-              placeholder="https://vimeo.com/123456789"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Label htmlFor="vimeo-url" className="sr-only">Vimeo URL</Label>
+              <Input
+                id="vimeo-url"
+                type="url"
+                placeholder="https://vimeo.com/123456789"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+              />
+            </div>
+            <Button type="submit">Add</Button>
           </div>
-          <Button type="submit">Add</Button>
+          {visibleSlides.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="insert-position" className="text-sm whitespace-nowrap">
+                Insert after:
+              </Label>
+              <Select value={afterSlide} onValueChange={setAfterSlide}>
+                <SelectTrigger id="insert-position" className="w-full">
+                  <SelectValue placeholder="Select position" />
+                </SelectTrigger>
+                <SelectContent>
+                  {visibleSlides.map((slide, i) => (
+                    <SelectItem key={slide.index} value={String(i)}>
+                      Slide {i + 1}{slide.type !== 'image' ? ` (${slide.type})` : ''}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="end">At the end</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </form>
       </CardContent>
     </Card>

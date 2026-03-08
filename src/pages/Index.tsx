@@ -55,7 +55,7 @@ const Index = () => {
         <div className="mb-12 space-y-6">
           <PptxUploader onImagesUploaded={handleImagesUploaded} />
           <ZipUploader onImagesUploaded={handleImagesUploaded} />
-          <VimeoInput onSlideCreated={handleVimeoSlide} />
+          <VimeoInput slides={slides} onSlideInserted={handleVimeoInsert} />
         </div>
 
         {/* Show Carousel Button */}
