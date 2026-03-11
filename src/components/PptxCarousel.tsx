@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { SlideData } from '@/types/slides';
 import { SlideRenderer } from './SlideRenderer';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PptxCarouselProps {
