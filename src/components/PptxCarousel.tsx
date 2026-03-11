@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { SlideData } from '@/types/slides';
 import { SlideRenderer } from './SlideRenderer';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PptxCarouselProps {
@@ -12,7 +12,26 @@ interface PptxCarouselProps {
 export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   const visibleSlides = slides.filter(s => !s.isHidden);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const touchStartX = useRef<number | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      await containerRef.current.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -80,9 +99,12 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col gap-4">
+    <div ref={containerRef} className={cn("w-full h-full flex flex-col gap-4", isFullscreen && "bg-black justify-center")}>
       {/* Carousel Container */}
-      <div className="relative w-full aspect-video bg-card rounded-xl overflow-hidden shadow-[var(--shadow-card)]">
+      <div className={cn(
+        "relative w-full bg-card overflow-hidden shadow-[var(--shadow-card)]",
+        isFullscreen ? "h-full rounded-none" : "aspect-video rounded-xl"
+      )}>
         {visibleSlides.map((slide, i) => (
           <div
             key={slide.index}
@@ -130,6 +152,17 @@ export const PptxCarousel = ({ slides }: PptxCarouselProps) => {
             </Button>
           </>
         )}
+
+        {/* Fullscreen Toggle */}
+        <Button
+          variant="secondary"
+          size="icon"
+          className="absolute top-4 right-4 z-40 opacity-90 hover:opacity-100"
+          onClick={toggleFullscreen}
+          title={isFullscreen ? "Exit fullscreen (ESC)" : "Enter fullscreen"}
+        >
+          {isFullscreen ? <Minimize className="w-5 h-5" /> : <Maximize className="w-5 h-5" />}
+        </Button>
 
         {/* Slide Counter */}
         <div className="absolute bottom-4 right-4 z-40 bg-background/90 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-medium">
